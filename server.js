@@ -85,7 +85,6 @@ app.get('/equipos/:id', async (req, res) => {
 });
 
 
-
 // Iniciar el servidor solo si este archivo se ejecuta directamente
 if (require.main === module) {
     connectDB().then(() => {
