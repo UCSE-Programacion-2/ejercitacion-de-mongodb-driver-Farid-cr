@@ -18,6 +18,12 @@ const PORT = process.env.PORT || 3000;
  */
 // Tu código aquí
 
+app.use((req, res, next) => {
+    req.db = client.db('MundialDB');
+    req.collection = req.db.collection('equipos');
+    next();
+});
+
 /**
  * TODO: Implementar un endpoint GET /equipos
  * 1. Debe buscar y traer todos los documentos de la colección 'equipos'.
@@ -27,6 +33,8 @@ const PORT = process.env.PORT || 3000;
  */
 app.get('/equipos', async (req, res) => {
     // Tu código aquí
+    const equipos = await req.collection.find().toArray();
+    res.status(200).json(equipos);
 });
 
 /**
@@ -39,6 +47,13 @@ app.get('/equipos', async (req, res) => {
  */
 app.get('/equipos/buscar', async (req, res) => {
     // Tu código aquí
+    const { tecnico } = req.query;
+
+    const equipos = await req.collection.find({
+        tecnico: { $regex: tecnico, $options: 'i' },
+    }).toArray();
+
+    res.status(200).json(equipos);
 });
 
 /**
@@ -52,8 +67,22 @@ app.get('/equipos/buscar', async (req, res) => {
  */
 app.get('/equipos/:id', async (req, res) => {
     // Tu código aquí
-});
+    const { id } = req.params;
 
+    if (!ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'ID inválido' });
+    }
+
+    const equipo = await req.collection.findOne({
+        _id: new ObjectId(id),
+    });
+
+    if (!equipo) {
+        return res.status(404).json({ error: 'Equipo no encontrado' });
+    }
+
+    return res.status(200).json(equipo);
+});
 
 
 // Iniciar el servidor solo si este archivo se ejecuta directamente
